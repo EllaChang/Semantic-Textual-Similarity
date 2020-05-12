@@ -7,14 +7,24 @@ test_edit = []
 test_jaccard = []
 train_edit = []
 train_jaccard = []
+four = []
+five = []
+six = []
+j_small = []
 
 test_file = open('test-STS.input.MSRpar.txt', 'r')
 test_lines = test_file.readlines()
 test_count = 0
 for line in test_lines:
     pair = test_lines[test_count].split('\t')
-    test_edit.append(nltk.edit_distance(nltk.word_tokenize(pair[0]), nltk.word_tokenize(pair[1])))
-    test_jaccard.append(nltk.jaccard_distance(set(nltk.word_tokenize(pair[0])), set(nltk.word_tokenize(pair[1]))))
+    edit_score = nltk.edit_distance(nltk.word_tokenize(pair[0]), nltk.word_tokenize(pair[1]))
+    test_edit.append(edit_score)
+    if (edit_score == 4): four.append(pair)
+    if (edit_score == 5): five.append(pair)
+    if (edit_score == 6): six.append(pair)
+    j_score = nltk.jaccard_distance(set(nltk.word_tokenize(pair[0])), set(nltk.word_tokenize(pair[1])))
+    test_jaccard.append(j_score)
+    if (j_score <= 0.175): j_small.append(pair)
     test_count += 1
 
 train_file = open('train-STS.input.MSRpar.txt', 'r')
@@ -22,17 +32,45 @@ train_lines = train_file.readlines()
 train_count = 0
 for line in train_lines:
     pair = train_lines[train_count].split('\t')
-    train_edit.append(nltk.edit_distance(nltk.word_tokenize(pair[0]), nltk.word_tokenize(pair[1])))
-    train_jaccard.append(nltk.jaccard_distance(set(nltk.word_tokenize(pair[0])), set(nltk.word_tokenize(pair[1]))))
+    edit_score = nltk.edit_distance(nltk.word_tokenize(pair[0]), nltk.word_tokenize(pair[1]))
+    train_edit.append(edit_score)
+    if (edit_score == 4): four.append(pair)
+    if (edit_score == 5): five.append(pair)
+    if (edit_score == 6): six.append(pair)
+    j_score = nltk.jaccard_distance(set(nltk.word_tokenize(pair[0])), set(nltk.word_tokenize(pair[1])))
+    train_jaccard.append(j_score)
+    if (j_score == 0.0): print(pair)
+    if (j_score <= 0.175): j_small.append(pair)
     train_count += 1
+
+es = open('edit_small.txt', 'w')
+es.write('Sentences with an edit score of 4:\n\n')
+for p in four:
+    es.write(p[0] + '\n')
+    es.write(p[1] + '\n')
+es.write('Sentences with an edit score of 5:\n\n')
+for p in five:
+    es.write(p[0] + '\n')
+    es.write(p[1] + '\n')
+es.write('Sentences with an edit score of 6:\n\n')
+for p in six:
+    es.write(p[0] + '\n')
+    es.write(p[1] + '\n')
+
+# Jaccard: 0.175
+js = open('jaccard_small.txt', 'w')
+js.write('Sentences with a Jaccard score of 0.175 or lower:\n\n')
+for p in j_small:
+    js.write(p[0] + '\n')
+    js.write(p[1] + '\n')
 
 edit_bins = []
 edit_value = []
 edit_score = test_edit + train_edit
-for i in range (4, 29):
+for i in range (4, 30):
     edit_bins.append(i)
-a = 4.5
-while (a <= 27.5):
+a = 4
+while (a <= 28):
     edit_value.append(a)
     a += 1
 edit_count = plt.hist(edit_score, bins=edit_bins)
